@@ -367,6 +367,81 @@ body {
     background-color: var(--vscode-button-secondaryHoverBackground, #45494e);
 }
 
+/* Zoom Controls */
+.zoom-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 50;
+    background-color: var(--vscode-editorWidget-background, var(--dark-bg-secondary));
+    border: 1px solid var(--vscode-editorWidget-border, var(--dark-border));
+    border-radius: 6px;
+    padding: 4px;
+}
+
+.zoom-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: none;
+    color: var(--vscode-icon-foreground, var(--dark-text-primary));
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.zoom-btn:hover {
+    background-color: var(--vscode-toolbar-hoverBackground, var(--dark-hover));
+    color: var(--vscode-icon-foreground, #ffffff);
+}
+
+.zoom-btn:active {
+    background-color: var(--vscode-toolbar-activeBackground, var(--dark-selected));
+}
+
+.zoom-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--vscode-descriptionForeground, var(--dark-text-secondary));
+    text-align: center;
+    padding: 40px;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--vscode-editor-foreground, var(--dark-text-primary));
+    margin: 0 0 8px 0;
+}
+
+.empty-state p {
+    font-size: 14px;
+    margin: 0;
+    max-width: 300px;
+    line-height: 1.5;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 10px;

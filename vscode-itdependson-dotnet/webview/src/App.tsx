@@ -4,7 +4,8 @@ import {
   GraphNode,
   GraphEdge,
   GraphCanvasRef,
-  useSelection
+  useSelection,
+  darkTheme
 } from 'reagraph';
 import { DependencyGraph, DependencyNode, DependencyEdge, ProjectInfo } from './types';
 import NodeDetails from './components/NodeDetails';
@@ -49,9 +50,8 @@ const GraphComponent: React.FC<{
   graph: DependencyGraph;
   onNodeSelect: (node: DependencyNode | null) => void;
   onNodeHover: (node: DependencyNode | null) => void;
-}> = ({ nodes, edges, graph, onNodeSelect, onNodeHover }) => {
-  const graphRef = useRef<GraphCanvasRef | null>(null);
-
+  graphRef: React.RefObject<GraphCanvasRef | null>;
+}> = ({ nodes, edges, graph, onNodeSelect, onNodeHover, graphRef }) => {
   const {
     selections,
     actives,
@@ -119,6 +119,7 @@ const GraphComponent: React.FC<{
       edgeArrowPosition="end"
       draggable
       animated
+      theme={darkTheme}
     />
   );
 };
@@ -129,11 +130,33 @@ const App: React.FC = () => {
   const [hoveredNode, setHoveredNode] = useState<DependencyNode | null>(null);
   const [renderError, setRenderError] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const graphRef = useRef<GraphCanvasRef | null>(null);
+
+  // Zoom control handlers
+  const handleZoomIn = useCallback(() => {
+    if (graphRef.current) {
+      graphRef.current.zoomIn();
+    }
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    if (graphRef.current) {
+      graphRef.current.zoomOut();
+    }
+  }, []);
+
+  const handleFitView = useCallback(() => {
+    if (graphRef.current) {
+      graphRef.current.fitNodesInView();
+    }
+  }, []);
 
   // Filter graph based on selected project - show only the selected project and its dependencies
+  // By default, show empty graph until a project is selected
   const graph = useMemo((): DependencyGraph => {
     if (!selectedProjectId) {
-      return fullGraph;
+      // Return empty graph by default - user must select a project to view
+      return { nodes: [], edges: [], rootNodeId: '' };
     }
 
     // Find all nodes that are reachable from the selected project (dependencies)
@@ -251,16 +274,58 @@ const App: React.FC = () => {
 
       <div className="main-content">
         <div className="graph-container">
-          <ErrorBoundary fallback={errorFallback}>
-            <GraphComponent
-              nodes={nodes}
-              edges={edges}
-              graph={graph}
-              onNodeSelect={setSelectedNode}
-              onNodeHover={setHoveredNode}
-            />
-          </ErrorBoundary>
+          {selectedProjectId ? (
+            <ErrorBoundary fallback={errorFallback}>
+              <GraphComponent
+                nodes={nodes}
+                edges={edges}
+                graph={graph}
+                onNodeSelect={setSelectedNode}
+                onNodeHover={setHoveredNode}
+                graphRef={graphRef}
+              />
+            </ErrorBoundary>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-state-icon">📊</div>
+              <h3>Select a Project</h3>
+              <p>Choose a project from the sidebar to view its dependency graph</p>
+            </div>
+          )}
         </div>
+
+        {/* Zoom Controls */}
+        {selectedProjectId && (
+          <div className="zoom-controls">
+            <button
+              className="zoom-btn"
+              onClick={handleZoomIn}
+              title="Zoom In"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 4v8M4 8h8" stroke="currentColor" strokeWidth="1.5" fill="none" />
+              </svg>
+            </button>
+            <button
+              className="zoom-btn"
+              onClick={handleZoomOut}
+              title="Zoom Out"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M4 8h8" stroke="currentColor" strokeWidth="1.5" fill="none" />
+              </svg>
+            </button>
+            <button
+              className="zoom-btn"
+              onClick={handleFitView}
+              title="Fit to View"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M2 2h4v2H4v2H2V2zM10 2h4v4h-2V4h-2V2zM2 10h2v2h2v2H2v-4zM12 12v2h-2v-2h-2v-2h4v2z" fill="currentColor" />
+              </svg>
+            </button>
+          </div>
+        )}
 
         {/* Hover tooltip */}
         {hoveredNode && (
@@ -294,7 +359,7 @@ const App: React.FC = () => {
               className="reset-view-btn"
               onClick={() => setSelectedProjectId(null)}
             >
-              Show All
+              Clear Selection
             </button>
           )}
         </div>
