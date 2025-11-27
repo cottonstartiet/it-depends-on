@@ -6,8 +6,9 @@ import {
   GraphCanvasRef,
   useSelection
 } from 'reagraph';
-import { DependencyGraph, DependencyNode, ProjectInfo } from './types';
+import { DependencyGraph, DependencyNode, DependencyEdge, ProjectInfo } from './types';
 import NodeDetails from './components/NodeDetails';
+import ProjectSidebar from './components/ProjectSidebar';
 
 // Error Boundary Component
 interface ErrorBoundaryProps {
@@ -123,15 +124,57 @@ const GraphComponent: React.FC<{
 };
 
 const App: React.FC = () => {
-  const graph: DependencyGraph = window.initialGraph || { nodes: [], edges: [], rootNodeId: '' };
+  const fullGraph: DependencyGraph = window.initialGraph || { nodes: [], edges: [], rootNodeId: '' };
   const [selectedNode, setSelectedNode] = useState<DependencyNode | null>(null);
   const [hoveredNode, setHoveredNode] = useState<DependencyNode | null>(null);
   const [renderError, setRenderError] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+
+  // Filter graph based on selected project - show only the selected project and its dependencies
+  const graph = useMemo((): DependencyGraph => {
+    if (!selectedProjectId) {
+      return fullGraph;
+    }
+
+    // Find all nodes that are reachable from the selected project (dependencies)
+    const reachableNodes = new Set<string>();
+    const queue = [selectedProjectId];
+
+    while (queue.length > 0) {
+      const nodeId = queue.shift()!;
+      if (reachableNodes.has(nodeId)) continue;
+      reachableNodes.add(nodeId);
+
+      // Find all edges where this node is the source
+      fullGraph.edges.forEach(edge => {
+        if (edge.source === nodeId && !reachableNodes.has(edge.target)) {
+          queue.push(edge.target);
+        }
+      });
+    }
+
+    const filteredNodes = fullGraph.nodes.filter(node => reachableNodes.has(node.id));
+    const filteredEdges = fullGraph.edges.filter(
+      edge => reachableNodes.has(edge.source) && reachableNodes.has(edge.target)
+    );
+
+    return {
+      nodes: filteredNodes,
+      edges: filteredEdges,
+      rootNodeId: selectedProjectId
+    };
+  }, [fullGraph, selectedProjectId]);
+
+  const handleProjectSelect = useCallback((node: DependencyNode) => {
+    setSelectedProjectId(node.id);
+    setSelectedNode(null);
+  }, []);
 
   // Debug log
   console.log('App rendering with graph data:', graph);
   console.log('Nodes count:', graph.nodes?.length || 0);
   console.log('Edges count:', graph.edges?.length || 0);
+  console.log('Selected project:', selectedProjectId);
 
   // Transform nodes for reagraph format
   const nodes: GraphNode[] = useMemo(() => {
@@ -163,7 +206,7 @@ const App: React.FC = () => {
   }, [graph.edges]);
 
   // Show error if no data
-  if (!graph.nodes || graph.nodes.length === 0) {
+  if (!fullGraph.nodes || fullGraph.nodes.length === 0) {
     return (
       <div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', height: '100vh' }}>
         <h2 style={{ color: 'var(--vscode-editor-foreground, #fff)' }}>No Dependencies Found</h2>
@@ -199,66 +242,62 @@ const App: React.FC = () => {
 
   return (
     <div className="app-container">
-      <div className="graph-container">
-        <ErrorBoundary fallback={errorFallback}>
-          <GraphComponent
-            nodes={nodes}
-            edges={edges}
-            graph={graph}
-            onNodeSelect={setSelectedNode}
-            onNodeHover={setHoveredNode}
-          />
-        </ErrorBoundary>
-      </div>
+      {/* Left Sidebar */}
+      <ProjectSidebar
+        nodes={fullGraph.nodes}
+        selectedProjectId={selectedProjectId}
+        onProjectSelect={handleProjectSelect}
+      />
 
-      {/* Hover tooltip */}
-      {hoveredNode && (
-        <div className="hover-tooltip">
-          <NodeDetails node={hoveredNode} compact />
+      <div className="main-content">
+        <div className="graph-container">
+          <ErrorBoundary fallback={errorFallback}>
+            <GraphComponent
+              nodes={nodes}
+              edges={edges}
+              graph={graph}
+              onNodeSelect={setSelectedNode}
+              onNodeHover={setHoveredNode}
+            />
+          </ErrorBoundary>
         </div>
-      )}
 
-      {/* Side panel for selected node */}
-      {selectedNode && (
-        <div className="side-panel">
-          <div className="side-panel-header">
-            <h2>{selectedNode.label}</h2>
-            <button
-              className="close-button"
-              onClick={() => setSelectedNode(null)}
-            >
-              ×
-            </button>
+        {/* Hover tooltip */}
+        {hoveredNode && (
+          <div className="hover-tooltip">
+            <NodeDetails node={hoveredNode} compact />
           </div>
-          <NodeDetails node={selectedNode} />
-        </div>
-      )}
+        )}
 
-      {/* Legend */}
-      <div className="legend">
-        <h3>Legend</h3>
-        <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: '#6366f1' }}></span>
-          <span>Solution</span>
-        </div>
-        <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: '#3b82f6' }}></span>
-          <span>Project</span>
-        </div>
-        <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: '#10b981' }}></span>
-          <span>Library</span>
-        </div>
-        <div className="legend-item">
-          <span className="legend-color" style={{ backgroundColor: '#f59e0b' }}></span>
-          <span>Executable</span>
-        </div>
-      </div>
+        {/* Side panel for selected node */}
+        {selectedNode && (
+          <div className="side-panel">
+            <div className="side-panel-header">
+              <h2>{selectedNode.label}</h2>
+              <button
+                className="close-button"
+                onClick={() => setSelectedNode(null)}
+              >
+                ×
+              </button>
+            </div>
+            <NodeDetails node={selectedNode} />
+          </div>
+        )}
 
-      {/* Stats */}
-      <div className="stats">
-        <span>{graph.nodes.length} projects</span>
-        <span>{graph.edges.length} dependencies</span>
+        {/* Stats */}
+        <div className="stats">
+          <span>{graph.nodes.length} projects</span>
+          <span>{graph.edges.length} dependencies</span>
+          {selectedProjectId && (
+            <button
+              className="reset-view-btn"
+              onClick={() => setSelectedProjectId(null)}
+            >
+              Show All
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
