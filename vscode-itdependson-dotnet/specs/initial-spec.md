@@ -15,8 +15,10 @@ Create a vs code extension that will allow user to browse and select a C# soluti
 - graph visualization should be interactive and user should be able to click on graph nodes and move them around
 - clicking on a node should highlight the node and the arrows connecting it to the dependencies
 - if project A depends on project B, the arrow direction between the nodes should point from A to B (A -> B)
+- Display the nodes in a hub and spoke layout or use the view where nodes are spread out and keep spreading as new nodes are added.
   
 # Tech Stack
 - The application should be able to run offline
 - you can use any third party library you need to display the graph
 - Use react if possible, if not possible to use react, use plain html
+- Use reagraph library for drawing the nodes and graph
