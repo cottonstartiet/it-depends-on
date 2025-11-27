@@ -71,8 +71,8 @@ export class DependencyGraphPanel {
   }
 
   private _handleNodeClick(nodeId: string): void {
-    // You could open the file when clicking on a node
-    vscode.window.showInformationMessage(`Clicked on: ${nodeId}`);
+    // Node click handler - could be used to open the file or perform other actions
+    void nodeId;
   }
 
   public dispose(): void {
