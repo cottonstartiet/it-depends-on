@@ -1,6 +1,6 @@
 {
   "name": "itdependson-dotnet",
-  "displayName": "It Depends On - .NET Dependency Visualizer",
+  "displayName": "ItDependsOn - .NET Dependency Visualizer",
   "description": "Visualize C# solution and project dependencies in an interactive graph",
   "version": "0.0.1",
   "publisher": "itdependson",
@@ -25,12 +25,12 @@
       {
         "command": "itdependson.openSolution",
         "title": "Open Solution/Project File",
-        "category": "It Depends On"
+        "category": "ItDependsOn"
       },
       {
         "command": "itdependson.visualizeDependencies",
         "title": "Visualize Dependencies",
-        "category": "It Depends On"
+        "category": "ItDependsOn"
       }
     ],
     "menus": {
