@@ -1,0 +1,53 @@
+# Source files (we use compiled dist)
+src/**
+
+# Webview source and dependencies (only need webview/dist)
+webview/src/**
+webview/node_modules/**
+webview/package.json
+webview/package-lock.json
+webview/tsconfig.json
+webview/webpack.config.js
+!webview/dist/**
+
+# Development and build files
+.vscode/**
+.vscode-test/**
+node_modules/**
+!node_modules/fast-xml-parser/**
+scripts/**
+specs/**
+
+# Config files
+.eslintrc.json
+.gitignore
+tsconfig.json
+*.ts
+!*.d.ts
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+test/**
+tests/**
+
+# Build artifacts
+out/**
+*.vsix
+
+# Documentation (except README)
+CHANGELOG.md
+CONTRIBUTING.md
+
+# Git files
+.git/**
+.gitattributes
+
+# Editor files
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Lock files
+package-lock.json

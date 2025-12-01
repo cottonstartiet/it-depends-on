@@ -2,8 +2,6 @@
 
 A Visual Studio Code extension that visualizes C# solution and project dependencies in an interactive graph.
 
-![Dependency Graph Visualization](media/screenshot.png)
-
 ## Features
 
 - 📁 **Browse & Select**: Open any `.sln` or `.csproj` file to analyze
@@ -30,7 +28,7 @@ A Visual Studio Code extension that visualizes C# solution and project dependenc
    ```
 4. Press F5 in VS Code to launch the Extension Development Host
 
-### From VSIX (Coming Soon)
+### From VSIX
 
 Download the `.vsix` file and install via:
 - VS Code: Extensions → ... → Install from VSIX
@@ -105,6 +103,9 @@ vscode-itdependson-dotnet/
 │   │   ├── components/     # React components
 │   │   └── styles.css      # Styles
 │   └── package.json
+├── scripts/                # Build scripts
+│   ├── build-vsix.ps1      # Windows PowerShell build script
+│   └── build-vsix.sh       # Linux/macOS build script
 └── package.json            # Extension manifest
 ```
 
@@ -121,6 +122,78 @@ npm run compile
 # Watch mode for extension
 npm run watch
 ```
+
+### Packaging VSIX
+
+The extension can be packaged into a `.vsix` file for distribution using several methods:
+
+#### Using npm scripts
+
+```bash
+# Build and package in one command
+npm run build:vsix
+
+# Just package (assumes already compiled)
+npm run package
+
+# Package and install locally for testing
+npm run package:install
+```
+
+#### Using build scripts
+
+**Windows (PowerShell):**
+```powershell
+# Basic build
+.\scripts\build-vsix.ps1
+
+# Clean build (removes previous build artifacts)
+.\scripts\build-vsix.ps1 -Clean
+
+# Skip dependency installation (faster, for CI/CD)
+.\scripts\build-vsix.ps1 -SkipInstall
+```
+
+**Linux/macOS (Bash):**
+```bash
+# Basic build
+./scripts/build-vsix.sh
+
+# Clean build
+./scripts/build-vsix.sh --clean
+
+# Skip dependency installation
+./scripts/build-vsix.sh --skip-install
+```
+
+#### Installing the VSIX
+
+After building, install the extension:
+
+```bash
+# Using VS Code CLI
+code --install-extension itdependson-dotnet-0.0.1.vsix
+
+# Or in VS Code:
+# 1. Open Extensions view (Ctrl+Shift+X)
+# 2. Click "..." menu → "Install from VSIX..."
+# 3. Select the .vsix file
+```
+
+### Available npm Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run compile` | Compile both extension and webview |
+| `npm run compile:extension` | Compile only the extension TypeScript |
+| `npm run compile:webview` | Build only the webview React app |
+| `npm run watch` | Watch mode for extension development |
+| `npm run watch:webview` | Watch mode for webview development |
+| `npm run lint` | Run ESLint on source files |
+| `npm run clean` | Remove build directories |
+| `npm run package` | Create VSIX package |
+| `npm run build:vsix` | Compile and package in one step |
+| `npm run package:install` | Package and install locally |
 
 ### Debugging
 
