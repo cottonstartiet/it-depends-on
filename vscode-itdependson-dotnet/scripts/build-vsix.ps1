@@ -9,12 +9,16 @@
     2. Compiles the TypeScript code
     3. Builds the webview React application
     4. Packages everything into a VSIX file
+    5. Optionally installs the extension to VS Code
 
 .PARAMETER Clean
     If specified, cleans the dist and out directories before building.
 
 .PARAMETER SkipInstall
     If specified, skips the npm install step (useful for CI/CD when dependencies are cached).
+
+.PARAMETER Install
+    If specified, installs the extension to VS Code after building.
 
 .EXAMPLE
     .\scripts\build-vsix.ps1
@@ -24,11 +28,15 @@
     
 .EXAMPLE
     .\scripts\build-vsix.ps1 -SkipInstall
+
+.EXAMPLE
+    .\scripts\build-vsix.ps1 -Install
 #>
 
 param(
     [switch]$Clean,
-    [switch]$SkipInstall
+    [switch]$SkipInstall,
+    [switch]$Install
 )
 
 $ErrorActionPreference = "Stop"
@@ -111,19 +119,43 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "  VSIX package created successfully." -ForegroundColor Green
 
-# Find and display the created VSIX file
+# Find the created VSIX file
 $VsixFile = Get-ChildItem -Path $ProjectRoot -Filter "*.vsix" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-if ($VsixFile) {
+if (-not $VsixFile) {
+    Write-Host "  ERROR: No VSIX file found after packaging" -ForegroundColor Red
+    exit 1
+}
+
+# Install extension if requested
+if ($Install) {
     Write-Host ""
-    Write-Host "======================================" -ForegroundColor Cyan
-    Write-Host "  Build Complete!" -ForegroundColor Green
-    Write-Host "======================================" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "  VSIX file: $($VsixFile.Name)" -ForegroundColor White
-    Write-Host "  Size: $([math]::Round($VsixFile.Length / 1KB, 2)) KB" -ForegroundColor White
-    Write-Host "  Path: $($VsixFile.FullName)" -ForegroundColor White
-    Write-Host ""
+    Write-Host "[7/7] Installing extension to VS Code..." -ForegroundColor Yellow
+    code --install-extension $VsixFile.FullName
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ERROR: Failed to install extension" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  Extension installed successfully." -ForegroundColor Green
+}
+
+# Display summary
+Write-Host ""
+Write-Host "======================================" -ForegroundColor Cyan
+Write-Host "  Build Complete!" -ForegroundColor Green
+Write-Host "======================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  VSIX file: $($VsixFile.Name)" -ForegroundColor White
+Write-Host "  Size: $([math]::Round($VsixFile.Length / 1KB, 2)) KB" -ForegroundColor White
+Write-Host "  Path: $($VsixFile.FullName)" -ForegroundColor White
+Write-Host ""
+if ($Install) {
+    Write-Host "  Extension has been installed to VS Code." -ForegroundColor Green
+    Write-Host "  Reload VS Code to activate the extension." -ForegroundColor Yellow
+} else {
     Write-Host "  To install:" -ForegroundColor Yellow
     Write-Host "    code --install-extension $($VsixFile.Name)" -ForegroundColor White
     Write-Host ""
+    Write-Host "  Or run this script with -Install flag:" -ForegroundColor Yellow
+    Write-Host "    .\scripts\build-vsix.ps1 -Install" -ForegroundColor White
 }
+Write-Host ""

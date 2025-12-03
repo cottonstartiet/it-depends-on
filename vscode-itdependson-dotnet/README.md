@@ -15,14 +15,14 @@ A Visual Studio Code extension that visualizes C# solution and project dependenc
 # Usage
 
 ## Command Palette
-![Command Palette Launch](https://raw.githubusercontent.com/it-depends-on/vscode-itdependson-dotnet/main/assets/launch-cmd-palette.png)
+![Command Palette Launch](https://raw.githubusercontent.com/cottonstartiet/it-depends-on/main/vscode-itdependson-dotnet/assets/launch-cmd-palette.png)
 1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
 2. Type "It Depends On: Open Solution/Project File"
 3. Select a `.sln` or `.csproj` file
 4. View the dependency graph
 
 ## Context Menu
-![Context Menu Launch](https://raw.githubusercontent.com/it-depends-on/vscode-itdependson-dotnet/main/assets/launch-right-click.png)
+![Context Menu Launch](https://raw.githubusercontent.com/cottonstartiet/it-depends-on/main/vscode-itdependson-dotnet/assets/launch-right-click.png)
 1. Right-click on any `.sln` or `.csproj` file in the Explorer
 2. Select "Visualize Dependencies"
 3. View the dependency graph

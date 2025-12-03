@@ -3,15 +3,15 @@
   "displayName": "ItDependsOn - .NET Dependency Visualizer",
   "description": "Visualize C# solution and project dependencies in an interactive graph",
   "version": "0.2.0",
-  "publisher": "itdependson",
+  "publisher": "ritekodedotcom",
   "icon": "assets/it-depends-on-icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/it-depends-on/vscode-itdependson-dotnet.git"
+    "url": "https://github.com/cottonstartiet/it-depends-on.git"
   },
-  "homepage": "https://github.com/it-depends-on/vscode-itdependson-dotnet#readme",
+  "homepage": "https://github.com/cottonstartiet/it-depends-on#readme",
   "bugs": {
-    "url": "https://github.com/it-depends-on/vscode-itdependson-dotnet/issues"
+    "url": "https://github.com/cottonstartiet/it-depends-on/issues"
   },
   "license": "MIT",
   "engines": {
