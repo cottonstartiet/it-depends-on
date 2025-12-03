@@ -1,12 +1,14 @@
 import React from 'react';
-import { DependencyNode, ProjectInfo } from '../types';
+import { DependencyNode, ProjectInfo, ReferencingProject } from '../types';
 
 interface NodeDetailsProps {
   node: DependencyNode;
   compact?: boolean;
+  referencedBy?: ReferencingProject[];
+  onProjectClick?: (projectId: string) => void;
 }
 
-const NodeDetails: React.FC<NodeDetailsProps> = ({ node, compact = false }) => {
+const NodeDetails: React.FC<NodeDetailsProps> = ({ node, compact = false, referencedBy = [], onProjectClick }) => {
   const data: ProjectInfo = node.data;
 
   if (compact) {
@@ -113,6 +115,33 @@ const NodeDetails: React.FC<NodeDetailsProps> = ({ node, compact = false }) => {
               <div key={index} className="package-item">
                 <span className="package-name">{pkg.name}</span>
                 <span className="package-version">{pkg.version}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {referencedBy && referencedBy.length > 0 && (
+        <div className="detail-section">
+          <h4>Referenced By ({referencedBy.length})</h4>
+          <div className="referencing-list">
+            {referencedBy.map((project) => (
+              <div
+                key={project.id}
+                className="referencing-item"
+                onClick={() => onProjectClick?.(project.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    onProjectClick?.(project.id);
+                  }
+                }}
+              >
+                <span className="referencing-name">{project.name}</span>
+                {project.path && (
+                  <span className="referencing-path">{project.path}</span>
+                )}
               </div>
             ))}
           </div>

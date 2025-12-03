@@ -319,6 +319,52 @@ body {
     font-family: var(--vscode-editor-font-family, 'Consolas', 'Courier New', monospace);
 }
 
+/* Referenced By List */
+.referencing-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--vscode-input-border, #3c3c3c);
+    border-radius: 4px;
+}
+
+.referencing-item {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--vscode-input-border, #3c3c3c);
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.referencing-item:last-child {
+    border-bottom: none;
+}
+
+.referencing-item:hover {
+    background-color: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+.referencing-item:focus {
+    outline: 1px solid var(--vscode-focusBorder, #3794ff);
+    outline-offset: -1px;
+}
+
+.referencing-name {
+    color: var(--vscode-textLink-foreground, #3794ff);
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.referencing-path {
+    color: var(--vscode-descriptionForeground, #969696);
+    font-family: var(--vscode-editor-font-family, 'Consolas', 'Courier New', monospace);
+    font-size: 11px;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* Hover Tooltip */
 .hover-tooltip {
     position: fixed;

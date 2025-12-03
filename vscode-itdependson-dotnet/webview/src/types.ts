@@ -23,6 +23,12 @@ export interface DependencyNode {
   data: ProjectInfo;
 }
 
+export interface ReferencingProject {
+  id: string;
+  name: string;
+  path?: string;
+}
+
 export interface DependencyEdge {
   id: string;
   source: string;

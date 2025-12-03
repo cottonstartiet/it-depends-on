@@ -7,7 +7,7 @@ import {
   useSelection,
   darkTheme
 } from 'reagraph';
-import { DependencyGraph, DependencyNode, DependencyEdge, ProjectInfo } from './types';
+import { DependencyGraph, DependencyNode, DependencyEdge, ProjectInfo, ReferencingProject } from './types';
 import NodeDetails from './components/NodeDetails';
 import ProjectSidebar from './components/ProjectSidebar';
 
@@ -49,9 +49,8 @@ const GraphComponent: React.FC<{
   edges: GraphEdge[];
   graph: DependencyGraph;
   onNodeSelect: (node: DependencyNode | null) => void;
-  onNodeHover: (node: DependencyNode | null) => void;
   graphRef: React.RefObject<GraphCanvasRef | null>;
-}> = ({ nodes, edges, graph, onNodeSelect, onNodeHover, graphRef }) => {
+}> = ({ nodes, edges, graph, onNodeSelect, graphRef }) => {
   const {
     selections,
     actives,
@@ -88,15 +87,6 @@ const GraphComponent: React.FC<{
     }
   }, [onCanvasClick, onNodeSelect]);
 
-  const handleNodePointerOver = useCallback((node: GraphNode) => {
-    const dependencyNode = graph.nodes.find(n => n.id === node.id);
-    onNodeHover(dependencyNode || null);
-  }, [graph.nodes, onNodeHover]);
-
-  const handleNodePointerOut = useCallback(() => {
-    onNodeHover(null);
-  }, [onNodeHover]);
-
   console.log('Rendering GraphCanvas with nodes:', nodes.length, 'edges:', edges.length);
 
   return (
@@ -108,8 +98,6 @@ const GraphComponent: React.FC<{
       actives={actives}
       onNodeClick={handleNodeClick}
       onCanvasClick={handleCanvasClick}
-      onNodePointerOver={handleNodePointerOver}
-      onNodePointerOut={handleNodePointerOut}
       labelType="all"
       layoutType="forceDirected2d"
       layoutOverrides={{
@@ -127,7 +115,6 @@ const GraphComponent: React.FC<{
 const App: React.FC = () => {
   const fullGraph: DependencyGraph = window.initialGraph || { nodes: [], edges: [], rootNodeId: '' };
   const [selectedNode, setSelectedNode] = useState<DependencyNode | null>(null);
-  const [hoveredNode, setHoveredNode] = useState<DependencyNode | null>(null);
   const [renderError, setRenderError] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const graphRef = useRef<GraphCanvasRef | null>(null);
@@ -187,6 +174,32 @@ const App: React.FC = () => {
       rootNodeId: selectedProjectId
     };
   }, [fullGraph, selectedProjectId]);
+
+  // Compute reverse dependencies (projects that reference the selected node)
+  const referencedBy = useMemo((): ReferencingProject[] => {
+    if (!selectedNode) {
+      return [];
+    }
+
+    // Find all edges where the selected node is the target (meaning the source references it)
+    const referencingNodeIds = fullGraph.edges
+      .filter(edge => edge.target === selectedNode.id)
+      .map(edge => edge.source);
+
+    // Get the node details for each referencing project
+    const projects: ReferencingProject[] = [];
+    for (const nodeId of referencingNodeIds) {
+      const node = fullGraph.nodes.find(n => n.id === nodeId);
+      if (node) {
+        projects.push({
+          id: node.id,
+          name: node.label,
+          path: node.data.path
+        });
+      }
+    }
+    return projects;
+  }, [fullGraph, selectedNode]);
 
   const handleProjectSelect = useCallback((node: DependencyNode) => {
     setSelectedProjectId(node.id);
@@ -281,7 +294,6 @@ const App: React.FC = () => {
                 edges={edges}
                 graph={graph}
                 onNodeSelect={setSelectedNode}
-                onNodeHover={setHoveredNode}
                 graphRef={graphRef}
               />
             </ErrorBoundary>
@@ -327,13 +339,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Hover tooltip */}
-        {hoveredNode && (
-          <div className="hover-tooltip">
-            <NodeDetails node={hoveredNode} compact />
-          </div>
-        )}
-
         {/* Side panel for selected node */}
         {selectedNode && (
           <div className="side-panel">
@@ -346,7 +351,17 @@ const App: React.FC = () => {
                 ×
               </button>
             </div>
-            <NodeDetails node={selectedNode} />
+            <NodeDetails
+              node={selectedNode}
+              referencedBy={referencedBy}
+              onProjectClick={(projectId) => {
+                const node = fullGraph.nodes.find(n => n.id === projectId);
+                if (node) {
+                  setSelectedProjectId(projectId);
+                  setSelectedNode(node);
+                }
+              }}
+            />
           </div>
         )}
 
