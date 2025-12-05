@@ -32,6 +32,8 @@ export class ProjectParser {
 
     if (ext === '.sln') {
       rootNodeId = await this.parseSolutionFile(filePath);
+    } else if (ext === '.slnx') {
+      rootNodeId = await this.parseSlnxFile(filePath);
     } else if (ext === '.csproj') {
       rootNodeId = await this.parseProjectFile(filePath);
     } else {
@@ -87,6 +89,101 @@ export class ProjectParser {
     }
 
     return slnNodeId;
+  }
+
+  private async parseSlnxFile(slnxPath: string): Promise<string> {
+    const content = fs.readFileSync(slnxPath, 'utf-8');
+    const slnxDir = path.dirname(slnxPath);
+    const slnxName = path.basename(slnxPath, '.slnx');
+
+    // Create a virtual node for the solution
+    const slnxNodeId = this.normalizeId(slnxPath);
+    const slnxNode: DependencyNode = {
+      id: slnxNodeId,
+      label: slnxName,
+      data: {
+        name: slnxName,
+        path: slnxPath,
+        outputType: 'Solution'
+      }
+    };
+    this.visitedProjects.set(slnxNodeId, slnxNode);
+
+    try {
+      // Parse the XML content
+      const parsed = this.parser.parse(content);
+      const solution = parsed.Solution;
+
+      if (!solution) {
+        return slnxNodeId;
+      }
+
+      // Extract project references from .slnx file
+      // Format: <Project Path="relative/path/to/project.csproj" />
+      const projects = this.ensureArray(solution.Project);
+
+      for (const project of projects) {
+        const projectPath = project['@_Path'];
+
+        if (!projectPath) {
+          continue;
+        }
+
+        // Skip non-csproj files (e.g., solution folders)
+        if (!projectPath.endsWith('.csproj')) {
+          continue;
+        }
+
+        const projectFullPath = path.resolve(slnxDir, projectPath);
+
+        if (fs.existsSync(projectFullPath)) {
+          const projectNodeId = await this.parseProjectFile(projectFullPath);
+
+          // Add edge from solution to project
+          this.addEdge(slnxNodeId, projectNodeId);
+        }
+      }
+
+      // Handle nested Folder elements that may contain projects
+      const folders = this.ensureArray(solution.Folder);
+      await this.parseSlnxFolders(folders, slnxDir, slnxNodeId);
+
+    } catch (error) {
+      console.error(`Error parsing slnx file ${slnxPath}:`, error);
+    }
+
+    return slnxNodeId;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async parseSlnxFolders(
+    folders: any[],
+    baseDir: string,
+    parentNodeId: string
+  ): Promise<void> {
+    for (const folder of folders) {
+      // Process projects within this folder
+      const projects = this.ensureArray(folder.Project);
+
+      for (const project of projects) {
+        const projectPath = project['@_Path'];
+
+        if (!projectPath || !projectPath.endsWith('.csproj')) {
+          continue;
+        }
+
+        const projectFullPath = path.resolve(baseDir, projectPath);
+
+        if (fs.existsSync(projectFullPath)) {
+          const projectNodeId = await this.parseProjectFile(projectFullPath);
+          this.addEdge(parentNodeId, projectNodeId);
+        }
+      }
+
+      // Recursively process nested folders
+      const nestedFolders = this.ensureArray(folder.Folder);
+      await this.parseSlnxFolders(nestedFolders, baseDir, parentNodeId);
+    }
   }
 
   private async parseProjectFile(csprojPath: string): Promise<string> {

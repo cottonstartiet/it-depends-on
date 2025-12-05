@@ -4,7 +4,7 @@ A Visual Studio Code extension that visualizes C# solution and project dependenc
 
 ## Features
 
-- 📁 **Browse & Select**: Open any `.sln` or `.csproj` file to analyze
+- 📁 **Browse & Select**: Open any `.sln`, `.slnx`, or `.csproj` file to analyze
 - 🔍 **Recursive Analysis**: Automatically traverses all project references to build a complete dependency graph
 - 📊 **Interactive Graph**: Visualize dependencies using an interactive directed graph
 - 🖱️ **Click & Explore**: Click on nodes to see detailed project information
@@ -15,17 +15,33 @@ A Visual Studio Code extension that visualizes C# solution and project dependenc
 # Usage
 
 ## Command Palette
+
 ![Command Palette Launch](https://raw.githubusercontent.com/cottonstartiet/it-depends-on/main/vscode-itdependson-dotnet/assets/launch-cmd-palette.png)
+
 1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
 2. Type "It Depends On: Open Solution/Project File"
-3. Select a `.sln` or `.csproj` file
+3. Select a `.sln`, `.slnx`, or `.csproj` file
 4. View the dependency graph
 
 ## Context Menu
+
 ![Context Menu Launch](https://raw.githubusercontent.com/cottonstartiet/it-depends-on/main/vscode-itdependson-dotnet/assets/launch-right-click.png)
-1. Right-click on any `.sln` or `.csproj` file in the Explorer
+
+1. Right-click on any `.sln`, `.slnx`, or `.csproj` file in the Explorer
 2. Select "Visualize Dependencies"
 3. View the dependency graph
+
+## Dependency Graph View
+
+![Project Dependencies](https://raw.githubusercontent.com/cottonstartiet/it-depends-on/main/vscode-itdependson-dotnet/assets/project-dependencies.png)
+
+The extension displays an interactive graph showing all project dependencies in your solution.
+
+## Selected Project Highlighting
+
+![Selected Project Highlighted Dependencies](https://raw.githubusercontent.com/cottonstartiet/it-depends-on/main/vscode-itdependson-dotnet/assets/project-selected-highlighted-deps.png)
+
+When you select a project, its dependencies are highlighted in the graph, making it easy to trace the dependency chain.
 
 # Graph Interaction
 
@@ -37,9 +53,9 @@ A Visual Studio Code extension that visualizes C# solution and project dependenc
 
 # Node Colors
 
-| Color    | Type                         |
-| -------- | ---------------------------- |
-| 🟣 Indigo | Solution (.sln)              |
+| Color     | Type                         |
+| --------- | ---------------------------- |
+| 🟣 Indigo | Solution (.sln or .slnx)     |
 | 🔵 Blue   | Project (default)            |
 | 🟢 Green  | Library (OutputType=Library) |
 | 🟡 Amber  | Executable (OutputType=Exe)  |
@@ -54,6 +70,14 @@ A Visual Studio Code extension that visualizes C# solution and project dependenc
 - Root namespace
 - Version, authors, and description (if available)
 - NuGet package references
+
+# Supported File Formats
+
+| Format    | Description                                          |
+| --------- | ---------------------------------------------------- |
+| `.sln`    | Traditional Visual Studio solution file (text-based) |
+| `.slnx`   | New XML-based solution file format                   |
+| `.csproj` | C# project file (SDK-style)                          |
 
 # Requirements
 

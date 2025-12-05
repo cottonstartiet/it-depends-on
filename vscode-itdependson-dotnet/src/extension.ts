@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
         canSelectMany: false,
         openLabel: 'Select Solution or Project',
         filters: {
-          'C# Files': ['sln', 'csproj']
+          'C# Files': ['sln', 'slnx', 'csproj']
         }
       });
 
